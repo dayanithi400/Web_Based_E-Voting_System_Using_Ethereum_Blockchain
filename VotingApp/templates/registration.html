@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - E-Voting System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            padding-top: 30px;
+            padding-bottom: 30px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        .card-header {
+            background-color: #3f51b5;
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+            text-align: center;
+        }
+        .card-header h2 {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+        .card-body {
+            padding: 30px;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #555;
+        }
+        .form-control {
+            border-radius: 8px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(63, 81, 181, 0.25);
+            border-color: #3f51b5;
+        }
+        .btn-primary {
+            background-color: #3f51b5;
+            border-color: #3f51b5;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            background-color: #303f9f;
+            border-color: #303f9f;
+        }
+        .section-title {
+            color: #3f51b5;
+            font-weight: 600;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .alert {
+            border-radius: 8px;
+        }
+        .form-text {
+            color: #666;
+        }
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-vote-yea me-2"></i>E-Voting System Registration</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <h4 class="section-title"><i class="fas fa-user me-2"></i>Account Information</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="username" class="form-label required-field">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label required-field">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="password" class="form-label required-field">Password</label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                    <div class="form-text">Password must be at least 8 characters long</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirm_password" class="form-label required-field">Confirm Password</label>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                </div>
+                            </div>
+                            
+                            <h4 class="section-title"><i class="fas fa-id-card me-2"></i>Personal Information</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="voter_id" class="form-label required-field">Voter ID</label>
+                                    <input type="text" class="form-control" id="voter_id" name="voter_id" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="aadhar_number" class="form-label required-field">Aadhar Number</label>
+                                    <input type="text" class="form-control" id="aadhar_number" name="aadhar_number" required maxlength="12" pattern="[0-9]{12}">
+                                    <div class="form-text">12-digit Aadhar number without spaces</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone_number" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone_number" name="phone_number">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="date_of_birth" class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" id="date_of_birth" name="date_of_birth">
+                                </div>
+                            </div>
+                            
+                            <h4 class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Address Information</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="ward_number" class="form-label">Ward Number</label>
+                                    <input type="text" class="form-control" id="ward_number" name="ward_number">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="area" class="form-label required-field">Area</label>
+                                    <input type="text" class="form-control" id="area" name="area" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="taluk" class="form-label">Taluk</label>
+                                    <input type="text" class="form-control" id="taluk" name="taluk">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="district" class="form-label">District</label>
+                                    <input type="text" class="form-control" id="district" name="district">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="pin_code" class="form-label">PIN Code</label>
+                                    <input type="text" class="form-control" id="pin_code" name="pin_code" pattern="[0-9]{6}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="state" class="form-label">State</label>
+                                    <input type="text" class="form-control" id="state" name="state">
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                            </div>
+                        </form>
+                        <div class="mt-3 text-center">
+                            <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+            
+            form.addEventListener('submit', function(event) {
+                if (password.value !== confirmPassword.value) {
+                    event.preventDefault();
+                    alert('Passwords do not match!');
+                }
+                
+                if (password.value.length < 8) {
+                    event.preventDefault();
+                    alert('Password must be at least 8 characters long!');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

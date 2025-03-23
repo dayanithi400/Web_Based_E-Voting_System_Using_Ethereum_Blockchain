@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - E-Voting System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: none;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .card-header {
+            background-color: #3f51b5;
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 15px 20px;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .btn-primary {
+            background-color: #3f51b5;
+            border-color: #3f51b5;
+            border-radius: 8px;
+        }
+        .btn-primary:hover {
+            background-color: #303f9f;
+            border-color: #303f9f;
+        }
+        .navbar-brand {
+            font-weight: 600;
+            color: white !important;
+        }
+        .navbar {
+            background-color: #3f51b5;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+        .nav-link:hover {
+            color: white !important;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background-color: #3f51b5;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-right: 20px;
+        }
+        .profile-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .profile-id {
+            color: #666;
+            font-size: 16px;
+        }
+        .section-title {
+            color: #3f51b5;
+            font-weight: 600;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #555;
+        }
+        .info-value {
+            color: #333;
+        }
+        .eth-address {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            word-break: break-all;
+        }
+        .copy-btn {
+            cursor: pointer;
+            color: #3f51b5;
+            margin-left: 5px;
+        }
+        .copy-btn:hover {
+            color: #303f9f;
+        }
+        .badge-verified {
+            background-color: #4caf50;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+        .badge-pending {
+            background-color: #ff9800;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fas fa-vote-yea me-2"></i>E-Voting System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'voting_dashboard' %}"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'profile' %}"><i class="fas fa-user me-1"></i>Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-user-circle me-2"></i>User Profile</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                {{ user.username.0|upper }}
+                            </div>
+                            <div>
+                                <div class="profile-name">{{ user.username }}</div>
+                                <div class="profile-id">Voter ID: {{ user.voter_id }}</div>
+                                <div>
+                                    {% if user.is_registered_on_blockchain %}
+                                        <span class="badge-verified"><i class="fas fa-check-circle me-1"></i>Blockchain Verified</span>
+                                    {% else %}
+                                        <span class="badge-pending"><i class="fas fa-clock me-1"></i>Blockchain Pending</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <h4 class="section-title"><i class="fas fa-id-card me-2"></i>Personal Information</h4>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Username</div>
+                                    <div class="info-value">{{ user.username }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Email</div>
+                                    <div class="info-value">{{ user.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Voter ID</div>
+                                    <div class="info-value">{{ user.voter_id }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Aadhar Number</div>
+                                    <div class="info-value">
+                                        {% if user.aadhar_number %}
+                                            {{ user.aadhar_number }}
+                                        {% else %}
+                                            <span class="text-muted">Not provided</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Phone Number</div>
+                                    <div class="info-value">
+                                        {% if user.phone_number %}
+                                            {{ user.phone_number }}
+                                        {% else %}
+                                            <span class="text-muted">Not provided</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Date of Birth</div>
+                                    <div class="info-value">
+                                        {% if user.date_of_birth %}
+                                            {{ user.date_of_birth }}
+                                        {% else %}
+                                            <span class="text-muted">Not provided</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Address Information</h4>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Area</div>
+                                    <div class="info-value">{{ user.area }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Ward Number</div>
+                                    <div class="info-value">
+                                        {% if user.ward_number %}
+                                            {{ user.ward_number }}
+                                        {% else %}
+                                            <span class="text-muted">Not provided</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Taluk</div>
+                                    <div class="info-value">
+                                        {% if user.taluk %}
+                                            {{ user.taluk }}
+                                        {% else %}
+                                            <span class="text-muted">Not provided</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">District</div>
+                                    <div class="info-value">
+                                        {% if user.district %}
+                                            {{ user.district }}
+                                        {% else %}
+                                            <span class="text-muted">Not provided</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">PIN Code</div>
+                                    <div class="info-value">
+                                        {% if user.pin_code %}
+                                            {{ user.pin_code }}
+                                        {% else %}
+                                            <span class="text-muted">Not provided</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">State</div>
+                                    <div class="info-value">
+                                        {% if user.state %}
+                                            {{ user.state }}
+                                        {% else %}
+                                            <span class="text-muted">Not provided</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="section-title"><i class="fas fa-ethereum me-2"></i>Blockchain Information</h4>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <div class="info-label">Ethereum Address</div>
+                                    <div class="eth-address">
+                                        {{ user.eth_address }}
+                                        <i class="fas fa-copy copy-btn" onclick="copyToClipboard('{{ user.eth_address }}')" title="Copy to clipboard"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <div class="info-label">Blockchain Status</div>
+                                    <div class="info-value">
+                                        {% if user.is_registered_on_blockchain %}
+                                            <span class="text-success"><i class="fas fa-check-circle me-1"></i>Registered on blockchain</span>
+                                        {% else %}
+                                            <span class="text-warning"><i class="fas fa-exclamation-circle me-1"></i>Not registered on blockchain</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="{% url 'voting_dashboard' %}" class="btn btn-primary">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Ethereum address copied to clipboard!');
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
