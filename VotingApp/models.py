@@ -22,6 +22,7 @@ class User(AbstractUser):
 
 class Candidate(models.Model):
     name = models.CharField(max_length=100)
+    district = models.CharField(max_length=100, null=True, blank=True)
     area = models.CharField(max_length=100)
     blockchain_id = models.IntegerField(unique=True)
     

@@ -144,9 +144,17 @@
                                 <label for="name" class="form-label required-field">Candidate Name</label>
                                 <input type="text" class="form-control" id="name" name="name" required>
                             </div>
-                            <div class="mb-3">
-                                <label for="area" class="form-label required-field">Area</label>
-                                <input type="text" class="form-control" id="area" name="area" required>
+                            <div class="col-md-6 mb-3">
+                                <label for="district" class="form-label">District</label>
+                                <select class="form-select" id="district" name="district">
+                                    <option value="">Select District</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="area" class="form-label required-field">Assembly Constituency</label>
+                                <select class="form-select" id="area" name="area" required>
+                                    <option value="">Select Assembly Constituency</option>
+                                </select>
                             </div>
                             <div class="mb-3">
                                 <label for="picture" class="form-label">Candidate Picture</label>
@@ -180,6 +188,90 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const districtSelect = document.getElementById('district');
+            const areaSelect = document.getElementById('area');
+            // Tamil Nadu districts
+            const districts = [
+                "Ariyalur", "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri", "Dindigul", 
+                "Erode", "Kancheepuram", "Kanyakumari", "Karur", "Krishnagiri", 
+                "Madurai", "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", 
+                "Pudukkottai", "Ramanathapuram", "Salem", "Sivaganga", 
+                "Thanjavur", "Theni", "Thoothukudi", "Tiruchirappalli", "Tirunelveli", 
+                "Tiruppur", "Tiruvallur", "Tiruvannamalai", "Tiruvarur", "Vellore", "Viluppuram", 
+                "Virudhunagar"
+            ];
+            
+            // Populate districts dropdown
+            districts.forEach(district => {
+                const option = document.createElement('option');
+                option.value = district;
+                option.textContent = district;
+                districtSelect.appendChild(option);
+            });
+            
+            // Assembly constituencies by district
+            const constituencies = {
+                "Ariyalur": ["Ariyalur"],
+                "Chennai": ["Chennai North", "Chennai South", "Chennai Central", "Thousand Lights", "Royapuram", "Harbour"],
+                "Coimbatore": ["Coimbatore North", "Coimbatore South", "Singanallur", "Kinathukadavu", "Pollachi", "Valparai"],
+                "Cuddalore": ["Tittakudi","Vriddhachalam","Neyveli","Panruti","Cuddalore","Kurinjipadi","Bhuvanagiri","Chidambaram","Kattumannarkoil"],
+                "Dharmapuri": ["Palacodu", "Pennagaram", "Dharmapuri", "Pappireddippatti", "Harur"],
+                "Dindigul": ["Palani", "Oddanchatram", "Athoor", "Nilakkottai", "Natham", "Dindigul", "Vedasandur"],
+                "Erode": ["Erode (East)", "Erode (West)"],
+                "Kancheepuram": ["Shozhinganallur", "Alandur", "Sriperumbudur", "Pallavaram", "Tambaram", "Chengalpattu", "Thiruporur", "Cheyyur", "Madurantakam", "Uthiramerur", "Kancheepuram"],
+                "Kanyakumari": ["Kanniyakumari", "Nagercoil", "Colachal", "Padmanabhapuram", "Vilavancode", "Killiyoor"],
+                "Karur": ["Aravakurichi", "Karur", "Krishnarayapuram", "Kulithalai"],
+                "Krishnagiri": ["Uthangarai", "Bargur", "Krishnagiri", "Veppanahalli", "Hosur", "Thalli"],
+                "Madurai": ["Madurai East", "Madurai West", "Madurai North", "Madurai South", "Madurai Central", "Thiruparankundram"],
+                "Nagapattinam": ["Sirkazhi", "Mayiladuthurai", "Poompuhar", "Nagapattinam", "Kilvelur", "Vedaranyam"],
+                "Namakkal": ["Rasipuram", "Senthamangalam", "Namakkal"],
+                "Nilgiris": ["Udhagamandalam", "Gudalur", "Coonoor"],
+                "Perambalur": ["Perambalur", "Kunnam"],
+                "Pudukkottai": ["Gandharvakottai", "Viralimalai" ,"Pudukkottai", "Thirumayam" ,"Alangudi" ,"Aranthangi"],
+                "Ramanathapuram": ["Paramakudi", "Tiruvadanai", "Ramanathapuram", "Mudhukulathur"],
+                "Salem": ["Gangavalli", "Attur", "Yercaud", "Omalur", "Mettur", "Edappadi", "Sankari", "Salem (West)", "Salem (North)", "Salem (South)", "Veerapandi"],
+                "Sivaganga": ["Karaikudi", "Tiruppattur", "Sivaganga", "Manamadurai"],
+                "Thanjavur": ["Thiruvidaimarudur", "Kumbakonam", "Papanasam", "Thiruvaiyaru", "Thanjavur", "Orathanadu", "Pattukkottai", "Peravurani"],
+                "Theni": ["Andipatti", "Periyakulam", "Bodinayakanur", "Cumbum"],
+                "Thoothukudi": ["Vilathikulam", "Thoothukkudi", "Tiruchendur", "Srivaikuntam", "Ottapidaram", "Kovilpatti"],
+                "Tiruchirappalli": ["Manapparai","Srirangam", "Tiruchirappalli (West)", "Tiruchirappalli (East)", "Thiruverumbur", "Lalgudi", "Manachanallur", "Musiri", "Thuraiyur"],
+                "Tirunelveli": ["Sankarankovil", "Vasudevanallur", "Kadayanallur", "Tenkasi", "Alangulam", "Tirunelveli", "Ambasamudram", "Palayamkottai", "Nanguneri", "Radhapuram"],
+                "Tiruppur": ["Dharapuram", "Kangayam", "Avanashi", "Tiruppur (North)", "Tiruppur (South)", "Palladam", "Udumalaipettai", "Madathukulam"],
+                "Tiruvallur": ["Gummidipoondi", "Ponneri", "Tiruttani", "Thiruvallur", "Poonmallae", "Avadi", "Maduravoyal", "Ambattur", "Madavaram", "Thiruvottiyur"],
+                "Tiruvannamalai": ["Chengam", "Tiruvannamalai", "Kilpennathur", "Kalasapakkam", "Polur", "Arani", "Cheyyar", "Vandavasi"],
+                "Tiruvarur": ["Ariyalur"],
+                "Vellore": ["Arakkonam", "Sholingur", "Katpadi", "Ranipet", "Arcot", "Vellore", "Anaikattu", "Kilvaithinankuppam", "Gudiyattam", "Vaniyambadi", "Ambur", "Jolarpet", "Tirupattuaniyambadi", "Ambur", "Jolarpet", "Tirupattu"],
+                "Viluppuram": ["Gingee", "Mailam", "Tindivanam", "Vanur", "Viluppuram", "Vikravandi", "Tirukkoyilur", "Ulundurpettai", "Rishivandiyam", "Sankarapuram", "Kallakurichi"],
+                "Virudhunagar": ["Rajapalayam", "Srivilliputhur", "Sattur", "Sivakasi", "Virudhunagar", "Aruppukkottai", "Tiruchuli"],
+                
+                // Add more districts and their constituencies as needed
+                // This is a sample, you would need to populate the complete list from the data source
+            };
+            
+            // Default constituencies for other districts
+            const defaultConstituencies = ["Constituency 1", "Constituency 2", "Constituency 3"];
+            
+            // Update constituencies when district changes
+            districtSelect.addEventListener('change', function() {
+                // Clear current options
+                areaSelect.innerHTML = '<option value="">Select Assembly Constituency</option>';
+                
+                const selectedDistrict = this.value;
+                if (selectedDistrict) {
+                    // Get constituencies for the selected district or use default
+                    const districtConstituencies = constituencies[selectedDistrict] || defaultConstituencies;
+                    
+                    // Populate constituencies dropdown
+                    districtConstituencies.forEach(constituency => {
+                        const option = document.createElement('option');
+                        option.value = constituency;
+                        option.textContent = constituency;
+                        areaSelect.appendChild(option);
+                    });
+                }
+            })});
+            
         function previewImage(input) {
             const preview = document.getElementById('preview');
             if (input.files && input.files[0]) {
