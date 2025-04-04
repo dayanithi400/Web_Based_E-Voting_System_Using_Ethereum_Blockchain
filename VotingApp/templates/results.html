@@ -1,28 +1,4 @@
-import os
-import django
-import sys
-
-# Set up Django environment
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'VotingProject.settings')
-django.setup()
-
-def create_results_template():
-    print("Creating results.html template...")
-    
-    # Define the template directory
-    template_dir = 'VotingApp/templates'
-    
-    # Create the directory if it doesn't exist
-    if not os.path.exists(template_dir):
-        os.makedirs(template_dir)
-        print(f"Created directory: {template_dir}")
-    
-    # Define the template file path
-    template_path = os.path.join(template_dir, 'results.html')
-    
-    # Define the template content
-    template_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
