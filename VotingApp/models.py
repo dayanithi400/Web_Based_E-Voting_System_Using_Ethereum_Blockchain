@@ -25,8 +25,6 @@ class Candidate(models.Model):
     district = models.CharField(max_length=100, null=True, blank=True)
     area = models.CharField(max_length=100)
     blockchain_id = models.IntegerField(unique=True)
-    
-    # New fields
     picture = models.ImageField(upload_to='candidate_pictures/', null=True, blank=True)
     party = models.CharField(max_length=100, null=True, blank=True)
     party_leader = models.CharField(max_length=100, null=True, blank=True)

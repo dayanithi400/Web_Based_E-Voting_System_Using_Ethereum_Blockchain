@@ -59,7 +59,7 @@
         }
         .candidate-image {
             width: 100%;
-            height: 200px;
+            height: 350px;
             object-fit: cover;
             border-radius: 12px 12px 0 0;
         }
@@ -221,17 +221,15 @@
                                         <div class="card candidate-card">
                                             <div class="card-body">
                                                 {% if candidate.picture %}
-                                                    <img src="{{ candidate.picture.url }}" alt="{{ candidate.name }}" class="candidate-image">
+                                                    <img src="{{ candidate.picture }}" alt="{{ candidate.name }}" class="candidate-image ">
                                                 {% else %}
-                                                    <div class="candidate-image-placeholder">
-                                                        <i class="fas fa-user-tie"></i>
-                                                    </div>
+                                                    <p>No picture available</p>
                                                 {% endif %}
                                                 
                                                 <div class="candidate-info">
                                                     <div class="candidate-name">{{ candidate.name }}</div>
                                                     <div class="candidate-area"><i class="fas fa-map-marker-alt me-1"></i>{{ candidate.area }}</div>
-                                                    
+                                                    <div class="candidate-party">{{ candidate.party }}</div>
                                                     {% if candidate.party %}
                                                         <div class="candidate-party">
                                                             <i class="fas fa-flag me-1"></i>{{ candidate.party }}

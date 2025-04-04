@@ -1,0 +1,610 @@
+import os
+import django
+import sys
+
+# Set up Django environment
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'VotingProject.settings')
+django.setup()
+
+def create_results_template():
+    print("Creating results.html template...")
+    
+    # Define the template directory
+    template_dir = 'VotingApp/templates'
+    
+    # Create the directory if it doesn't exist
+    if not os.path.exists(template_dir):
+        os.makedirs(template_dir)
+        print(f"Created directory: {template_dir}")
+    
+    # Define the template file path
+    template_path = os.path.join(template_dir, 'results.html')
+    
+    # Define the template content
+    template_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election Results - E-Voting System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: none;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .card-header {
+            background-color: #3f51b5;
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 15px 20px;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .btn-primary {
+            background-color: #3f51b5;
+            border-color: #3f51b5;
+            border-radius: 8px;
+        }
+        .btn-primary:hover {
+            background-color: #303f9f;
+            border-color: #303f9f;
+        }
+        .navbar-brand {
+            font-weight: 600;
+            color: white !important;
+        }
+        .navbar {
+            background-color: #3f51b5;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+        .nav-link:hover {
+            color: white !important;
+        }
+        .results-table th {
+            color: #3f51b5;
+        }
+        .badge-winner {
+            background-color: #4caf50;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .party-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .party-bjp { background-color: #F97D09; }
+        .party-congress { background-color: #19AADE; }
+        .party-aap { background-color: #21B354; }
+        .party-other { background-color: #9E9E9E; }
+        .tab-content {
+            padding-top: 20px;
+        }
+        .nav-tabs .nav-link {
+            color: #3f51b5 !important;
+            font-weight: 500;
+        }
+        .nav-tabs .nav-link.active {
+            color: #3f51b5 !important;
+            font-weight: 700;
+            border-bottom: 3px solid #3f51b5;
+        }
+        .constituency-select {
+            max-width: 300px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        .party-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .party-card {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+        }
+        .party-card-bjp {
+            background-color: #F97D09;
+        }
+        .party-card-congress {
+            background-color: #19AADE;
+        }
+        .party-card-aap {
+            background-color: #21B354;
+        }
+        .party-card-other {
+            background-color: #9E9E9E;
+        }
+        .party-seats {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .party-name {
+            font-size: 14px;
+        }
+        .last-updated {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fas fa-vote-yea me-2"></i>E-Voting System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'voting_dashboard' %}"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-chart-bar me-1"></i>Results</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'profile' %}"><i class="fas fa-user me-1"></i>Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-bar me-2"></i>Election Results</h3>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="resultsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overall-tab" data-bs-toggle="tab" data-bs-target="#overall" type="button" role="tab" aria-controls="overall" aria-selected="true">
+                            <i class="fas fa-globe me-1"></i>Overall Results
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="constituency-tab" data-bs-toggle="tab" data-bs-target="#constituency" type="button" role="tab" aria-controls="constituency" aria-selected="false">
+                            <i class="fas fa-map-marker-alt me-1"></i>Constituency Results
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="resultsTabContent">
+                    <!-- Overall Results Tab -->
+                    <div class="tab-pane fade show active" id="overall" role="tabpanel" aria-labelledby="overall-tab">
+                        <h4 class="mb-4">Overall Election Results</h4>
+                        
+                        <!-- Party-wise Seat Summary -->
+                        <div class="party-summary">
+                            <div class="party-card party-card-bjp">
+                                <div class="party-seats" id="bjp-seats">0</div>
+                                <div class="party-name">BJP</div>
+                            </div>
+                            <div class="party-card party-card-congress">
+                                <div class="party-seats" id="congress-seats">0</div>
+                                <div class="party-name">Congress</div>
+                            </div>
+                            <div class="party-card party-card-aap">
+                                <div class="party-seats" id="aap-seats">0</div>
+                                <div class="party-name">AAP</div>
+                            </div>
+                            <div class="party-card party-card-other">
+                                <div class="party-seats" id="other-seats">0</div>
+                                <div class="party-name">Others</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Overall Chart -->
+                        <div class="chart-container">
+                            <canvas id="overallChart"></canvas>
+                        </div>
+                        
+                        <!-- Overall Results Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Party</th>
+                                        <th>Seats Won</th>
+                                        <th>Total Votes</th>
+                                        <th>Vote Share</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="overallResultsTable">
+                                    <tr>
+                                        <td colspan="4" class="text-center">
+                                            <i class="fas fa-spinner fa-spin me-2"></i>Loading results...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="last-updated">
+                            Last updated: <span id="overall-last-updated">-</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Constituency Results Tab -->
+                    <div class="tab-pane fade" id="constituency" role="tabpanel" aria-labelledby="constituency-tab">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h4>Constituency-wise Results</h4>
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-select constituency-select float-md-end" id="constituencySelect">
+                                    <option value="">Select Constituency</option>
+                                    <!-- Will be populated dynamically -->
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Constituency Chart -->
+                        <div class="chart-container">
+                            <canvas id="constituencyChart"></canvas>
+                        </div>
+                        
+                        <!-- Constituency Results Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Candidate</th>
+                                        <th>Party</th>
+                                        <th>Votes</th>
+                                        <th>Vote Share</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="constituencyResultsTable">
+                                    <tr>
+                                        <td colspan="5" class="text-center">
+                                            <i class="fas fa-spinner fa-spin me-2"></i>Loading results...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="last-updated">
+                            Last updated: <span id="constituency-last-updated">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize charts
+            const overallCtx = document.getElementById('overallChart').getContext('2d');
+            const constituencyCtx = document.getElementById('constituencyChart').getContext('2d');
+            
+            let overallChart = new Chart(overallCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Seats Won',
+                        data: [],
+                        backgroundColor: [
+                            '#F97D09', // BJP
+                            '#19AADE', // Congress
+                            '#21B354', // AAP
+                            '#9E9E9E'  // Others
+                        ],
+                        borderColor: [
+                            '#E65100',
+                            '#0277BD',
+                            '#1B5E20',
+                            '#616161'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Party-wise Seat Distribution'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            
+            let constituencyChart = new Chart(constituencyCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Votes',
+                        data: [],
+                        backgroundColor: 'rgba(63, 81, 181, 0.7)',
+                        borderColor: 'rgba(63, 81, 181, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Candidate-wise Vote Distribution'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Function to fetch overall results
+            function fetchOverallResults() {
+                fetch('{% url "get_overall_results" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            updateOverallChart(data.party_results);
+                            updateOverallTable(data.party_results);
+                            updatePartySummary(data.party_results);
+                            document.getElementById('overall-last-updated').textContent = new Date().toLocaleTimeString();
+                        } else {
+                            document.getElementById('overallResultsTable').innerHTML = 
+                                `<tr><td colspan="4" class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>${data.message}</td></tr>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching overall results:', error);
+                        document.getElementById('overallResultsTable').innerHTML = 
+                            '<tr><td colspan="4" class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Error fetching results</td></tr>';
+                    });
+            }
+            
+            // Function to fetch constituency results
+            function fetchConstituencyResults(constituency = null) {
+                let url = '{% url "get_results" %}';
+                if (constituency) {
+                    url += `?constituency=${encodeURIComponent(constituency)}`;
+                }
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            updateConstituencyChart(data.results);
+                            updateConstituencyTable(data.results);
+                            document.getElementById('constituency-last-updated').textContent = new Date().toLocaleTimeString();
+                        } else {
+                            document.getElementById('constituencyResultsTable').innerHTML = 
+                                `<tr><td colspan="5" class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>${data.message}</td></tr>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching constituency results:', error);
+                        document.getElementById('constituencyResultsTable').innerHTML = 
+                            '<tr><td colspan="5" class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Error fetching results</td></tr>';
+                    });
+            }
+            
+            // Function to fetch constituencies
+            function fetchConstituencies() {
+                fetch('{% url "get_constituencies" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const select = document.getElementById('constituencySelect');
+                            select.innerHTML = '<option value="">All Constituencies</option>';
+                            
+                            data.constituencies.forEach(constituency => {
+                                const option = document.createElement('option');
+                                option.value = constituency;
+                                option.textContent = constituency;
+                                select.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching constituencies:', error);
+                    });
+            }
+            
+            // Update overall chart
+            function updateOverallChart(results) {
+                const labels = results.map(result => result.party);
+                const data = results.map(result => result.seats);
+                
+                overallChart.data.labels = labels;
+                overallChart.data.datasets[0].data = data;
+                overallChart.update();
+            }
+            
+            // Update constituency chart
+            function updateConstituencyChart(results) {
+                const labels = results.map(result => result.name);
+                const data = results.map(result => result.vote_count);
+                const backgroundColors = results.map(result => {
+                    switch(result.party) {
+                        case 'BJP': return '#F97D09';
+                        case 'Congress': return '#19AADE';
+                        case 'AAP': return '#21B354';
+                        default: return '#9E9E9E';
+                    }
+                });
+                
+                constituencyChart.data.labels = labels;
+                constituencyChart.data.datasets[0].data = data;
+                constituencyChart.data.datasets[0].backgroundColor = backgroundColors;
+                constituencyChart.update();
+            }
+            
+            // Update overall table
+            function updateOverallTable(results) {
+                let totalVotes = results.reduce((sum, party) => sum + party.votes, 0);
+                let tableHtml = '';
+                
+                results.forEach(party => {
+                    const voteShare = totalVotes > 0 ? ((party.votes / totalVotes) * 100).toFixed(2) : '0.00';
+                    const partyClass = getPartyClass(party.party);
+                    
+                    tableHtml += `
+                        <tr>
+                            <td>
+                                <span class="party-color ${partyClass}"></span>
+                                ${party.party}
+                            </td>
+                            <td>${party.seats}</td>
+                            <td>${party.votes.toLocaleString()}</td>
+                            <td>${voteShare}%</td>
+                        </tr>
+                    `;
+                });
+                
+                document.getElementById('overallResultsTable').innerHTML = tableHtml;
+            }
+            
+            // Update constituency table
+            function updateConstituencyTable(results) {
+                let totalVotes = results.reduce((sum, candidate) => sum + candidate.vote_count, 0);
+                let tableHtml = '';
+                
+                // Sort by vote count (descending)
+                results.sort((a, b) => b.vote_count - a.vote_count);
+                
+                results.forEach((candidate, index) => {
+                    const voteShare = totalVotes > 0 ? ((candidate.vote_count / totalVotes) * 100).toFixed(2) : '0.00';
+                    const partyClass = getPartyClass(candidate.party);
+                    const isWinner = index === 0 && candidate.vote_count > 0;
+                    
+                    tableHtml += `
+                        <tr>
+                            <td>${candidate.name}</td>
+                            <td>
+                                <span class="party-color ${partyClass}"></span>
+                                ${candidate.party || 'Independent'}
+                            </td>
+                            <td>${candidate.vote_count.toLocaleString()}</td>
+                            <td>${voteShare}%</td>
+                            <td>
+                                ${isWinner ? '<span class="badge-winner">Leading</span>' : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                document.getElementById('constituencyResultsTable').innerHTML = tableHtml;
+            }
+            
+            // Update party summary cards
+            function updatePartySummary(results) {
+                results.forEach(party => {
+                    switch(party.party) {
+                        case 'BJP':
+                            document.getElementById('bjp-seats').textContent = party.seats;
+                            break;
+                        case 'Congress':
+                            document.getElementById('congress-seats').textContent = party.seats;
+                            break;
+                        case 'AAP':
+                            document.getElementById('aap-seats').textContent = party.seats;
+                            break;
+                        default:
+                            document.getElementById('other-seats').textContent = party.seats;
+                            break;
+                    }
+                });
+            }
+            
+            // Helper function to get party CSS class
+            function getPartyClass(party) {
+                switch(party) {
+                    case 'BJP': return 'party-bjp';
+                    case 'Congress': return 'party-congress';
+                    case 'AAP': return 'party-aap';
+                    default: return 'party-other';
+                }
+            }
+            
+            // Handle constituency select change
+            document.getElementById('constituencySelect').addEventListener('change', function() {
+                fetchConstituencyResults(this.value);
+            });
+            
+            // Initial data fetch
+            fetchOverallResults();
+            fetchConstituencyResults();
+            fetchConstituencies();
+            
+            // Refresh data periodically
+            setInterval(fetchOverallResults, 30000);
+            setInterval(() => {
+                const constituency = document.getElementById('constituencySelect').value;
+                fetchConstituencyResults(constituency);
+            }, 30000);
+        });
+    </script>
+</body>
+</html>
