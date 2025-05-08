@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from .models import User, Candidate, Vote
 from VotingProject.utils.web3_utils import Web3Utils
 import json
@@ -249,39 +249,198 @@ def voting_dashboard(request):
             'error': 'Blockchain connection not available',
             'user_area': user.area
         })
+# @login_required
+# def voting_dashboard(request):
+#     user = request.user
     
+#     # Check if user has already voted in the DATABASE ONLY
+#     has_voted = Vote.objects.filter(voter=user).exists()
+#     print(f"User {user.username} has voted (database check): {has_voted}")
     
+#     # Get candidates in user's area directly from database
+#     candidates = Candidate.objects.filter(area=user.area)
+#     print(f"Found {candidates.count()} candidates in area {user.area}")
+    
+#     # For development, we'll assume all users are registered on blockchain
+#     is_registered_on_blockchain = True
+    
+#     # Add media settings for debugging
+#     from django.conf import settings
+#     context = {
+#         'user_area': user.area,
+#         'candidates': candidates,
+#         'has_voted': has_voted,
+#         'is_registered_on_blockchain': is_registered_on_blockchain,
+#         'MEDIA_URL': settings.MEDIA_URL,
+#         'MEDIA_ROOT': settings.MEDIA_ROOT
+#     }
+    
+#     return render(request, 'voting_dashboard.html', context)
+
 @login_required
 def cast_vote(request):
     if request.method == 'POST':
         candidate_id = int(request.POST.get('candidate_id'))
         user = request.user
         
-        if web3_utils:
+        try:
+            # Debug information
+            print(f"Attempting to cast vote for candidate ID: {candidate_id}")
+            print(f"Available candidates in database:")
+            all_candidates = Candidate.objects.all()
+            for c in all_candidates:
+                print(f"  - ID: {c.id}, Blockchain ID: {c.blockchain_id}, Name: {c.name}, Area: {c.area}")
+            
+            # Check if user has already voted IN THE DATABASE
+            has_voted = Vote.objects.filter(voter=user).exists()
+            if has_voted:
+                return JsonResponse({'success': False, 'message': 'You have already voted'})
+            
+            # Try to get the candidate by blockchain_id first
             try:
-                # Check if user has already voted
-                if web3_utils.has_voted(user.eth_address):
-                    return JsonResponse({'success': False, 'message': 'You have already voted'})
-                
-                # Cast vote on blockchain
-                tx_receipt = web3_utils.vote(user.eth_address, candidate_id)
+                candidate = Candidate.objects.get(blockchain_id=candidate_id)
+            except Candidate.DoesNotExist:
+                # If not found, try to get by regular ID
+                try:
+                    candidate = Candidate.objects.get(id=candidate_id)
+                except Candidate.DoesNotExist:
+                    return JsonResponse({'success': False, 'message': f'Candidate with ID {candidate_id} not found'})
+            
+            print(f"Found candidate: {candidate.name} (ID: {candidate.id}, Blockchain ID: {candidate.blockchain_id})")
+            
+            if web3_utils:
+                # Cast vote on blockchain using admin account
+                #tx_receipt = web3_utils.vote(web3_utils.admin_account, candidate_id)
                 
                 # Save vote in database
-                candidate = Candidate.objects.get(blockchain_id=candidate_id)
                 Vote.objects.create(
                     voter=user,
                     candidate=candidate,
-                    transaction_hash=tx_receipt.transactionHash.hex()
+                    Constituencies=user.area
+                    #transaction_hash=tx_receipt.transactionHash.hex()
                 )
                 
                 return JsonResponse({'success': True, 'message': 'Vote cast successfully'})
-            except Exception as e:
-                return JsonResponse({'success': False, 'message': f'Error casting vote: {e}'})
-        else:
-            return JsonResponse({'success': False, 'message': 'Blockchain connection not available'})
-    
+            else:
+                return JsonResponse({'success': False, 'message': 'Blockchain connection not available'})
+        except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"Error casting vote: {e}")
+            print(error_details)
+            return JsonResponse({'success': False, 'message': f'Error casting vote: {e}'})
+
     return JsonResponse({'success': False, 'message': 'Invalid request'})
 
+# @login_required
+# def cast_vote(request):
+#     if request.method == 'POST':
+#         candidate_id = int(request.POST.get('candidate_id'))
+#         user = request.user
+        
+#         if web3_utils:
+#             try:
+#                 # Check if user has already voted
+#                 if web3_utils.has_voted(user.eth_address):
+#                     return JsonResponse({'success': False, 'message': 'You have already voted'})
+                
+#                 # Cast vote on blockchain
+#                 tx_receipt = web3_utils.vote(user.eth_address, candidate_id)
+                
+#                 # Save vote in database
+#                 candidate = Candidate.objects.get(blockchain_id=candidate_id)
+#                 Vote.objects.create(
+#                     voter=user,
+#                     candidate=candidate,
+#                     transaction_hash=tx_receipt.transactionHash.hex()
+#                 )
+                
+#                 return JsonResponse({'success': True, 'message': 'Vote cast successfully'})
+#             except Exception as e:
+#                 return JsonResponse({'success': False, 'message': f'Error casting vote: {e}'})
+#         else:
+#             return JsonResponse({'success': False, 'message': 'Blockchain connection not available'})
+    
+#     return JsonResponse({'success': False, 'message': 'Invalid request'})
+# @login_required
+# def cast_vote(request):
+#     if request.method == 'POST':
+#         candidate_id = int(request.POST.get('candidate_id'))
+#         user = request.user
+        
+#         if web3_utils:
+#             try:
+#                 # Check if user has already voted
+#                 # Note: We're using admin_account for checking has_voted in development
+#                 # In production, you would use the user's eth_address
+#                 if web3_utils.has_voted(web3_utils.admin_account):
+#                     return JsonResponse({'success': False, 'message': 'You have already voted'})
+                
+#                 # Cast vote on blockchain (will use admin account internally)
+#                 tx_receipt = web3_utils.vote(user.eth_address, candidate_id)
+                
+#                 # Save vote in database
+#                 candidate = Candidate.objects.get(blockchain_id=candidate_id)
+#                 Vote.objects.create(
+#                     voter=user,
+#                     candidate=candidate,
+#                     transaction_hash=tx_receipt.transactionHash.hex()
+#                 )
+                
+#                 return JsonResponse({'success': True, 'message': 'Vote cast successfully'})
+#             except Exception as e:
+#                 import traceback
+#                 error_details = traceback.format_exc()
+#                 print(f"Error casting vote: {e}")
+#                 print(error_details)
+#                 return JsonResponse({'success': False, 'message': f'Error casting vote: {e}'})
+#         else:
+#             return JsonResponse({'success': False, 'message': 'Blockchain connection not available'})
+    
+#     return JsonResponse({'success': False, 'message': 'Invalid request'})
+# @login_required
+# def cast_vote(request):
+#     if request.method == 'POST':
+#         candidate_id = int(request.POST.get('candidate_id'))
+#         user = request.user
+        
+#         if web3_utils:
+#             try:
+#                 # Check if user has already voted
+#                 # Note: We're using admin_account for checking has_voted in development
+#                 # In production, you would use the user's eth_address
+#                 if web3_utils.has_voted(web3_utils.admin_account):
+#                     return JsonResponse({'success': False, 'message': 'You have already voted'})
+                
+#                 # Make sure admin account is registered as a voter
+#                 is_admin_registered = web3_utils.is_registered_voter(web3_utils.admin_account)
+#                 if not is_admin_registered:
+#                     print(f"Admin account is not registered. Registering now...")
+#                     web3_utils.register_voter(web3_utils.admin_account, "ADMIN_VOTER_ID")
+#                     print(f"Admin account registered successfully")
+                
+#                 # Cast vote on blockchain (will use admin account internally)
+#                 tx_receipt = web3_utils.vote(user.eth_address, candidate_id)
+                
+#                 # Save vote in database
+#                 candidate = Candidate.objects.get(blockchain_id=candidate_id)
+#                 Vote.objects.create(
+#                     voter=user,
+#                     candidate=candidate,
+#                     transaction_hash=tx_receipt.transactionHash.hex()
+#                 )
+                
+#                 return JsonResponse({'success': True, 'message': 'Vote cast successfully'})
+#             except Exception as e:
+#                 import traceback
+#                 error_details = traceback.format_exc()
+#                 print(f"Error casting vote: {e}")
+#                 print(error_details)
+#                 return JsonResponse({'success': False, 'message': f'Error casting vote: {e}'})
+#         else:
+#             return JsonResponse({'success': False, 'message': 'Blockchain connection not available'})
+
+#     return JsonResponse({'success': False, 'message': 'Invalid request'})
 # def candidate_registration(request):
 #     if not request.user.is_authenticated or not request.user.is_staff:
 #         messages.error(request, 'You do not have permission to register candidates')
@@ -412,9 +571,12 @@ def get_results(request):
         
         # Get constituency filter if provided
         constituency = request.GET.get('constituency', None)
-        
         # Get all candidates, filtered by constituency if provided
         candidates_query = Candidate.objects.all()
+        total_voters = User.objects.filter(area=constituency).count()
+
+    # Total votes cast (assuming you have a Vote model storing votes)
+        votes_cast = Vote.objects.filter(candidate__area=constituency).count()
         if constituency:
             candidates_query = candidates_query.filter(area=constituency)
         
@@ -424,18 +586,25 @@ def get_results(request):
         for candidate in candidates:
             try:
                 # Get vote count from blockchain
-                vote_count = web3_utils.get_vote_count(candidate.blockchain_id)
-                
+                #vote_count = web3_utils.get_vote_count(candidate.blockchain_id)
+                vote_count = Vote.objects.filter(candidate=candidate).count()
                 # Add to results
                 results.append({
                     'name': candidate.name,
                     'area': candidate.area,
+                    #'vote_count': vote_count,
                     'vote_count': vote_count,
                     'party': candidate.party if candidate.party else 'Independent',
                     'party_leader': candidate.party_leader
                 })
             except Exception as e:
                 print(f"Error getting vote count for candidate {candidate.name}: {e}")
+        return JsonResponse({
+        'success': True,
+        'results': results,
+        'total_voters': total_voters,
+        'votes_cast': votes_cast
+        })
         
         # Sort by vote count (descending)
         results = sorted(results, key=lambda x: x['vote_count'], reverse=True)
@@ -518,4 +687,10 @@ def results_view(request):
     if not request.user.is_authenticated:
         return redirect('login')
     
-    return render(request, 'results.html')
+    return render(request, 'results_with_turnout.html')
+
+def get_voter_count(request):
+    constituency = request.GET.get('constituency', None)
+    voters = User.objects.filter(area=constituency)
+    total_voters = voters.count()
+    return JsonResponse({"total_voters": total_voters})

@@ -52,11 +52,35 @@ class Web3Utils:
     
     def vote(self, voter_address, candidate_id):
         """Cast a vote for a candidate"""
-        tx_hash = self.contract.functions.vote(candidate_id).transact({
-            'from': voter_address
-        })
-        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
-        return tx_receipt
+        print(f"Casting vote for candidate ID: {candidate_id}")
+        print(f"Using admin account: {self.admin_account}")
+
+        try:
+            # Always use admin account for voting
+            tx_hash = self.contract.functions.vote(candidate_id).transact({
+                'from': self.admin_account
+            })
+            tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+            return tx_receipt
+        except Exception as e:
+            print(f"Error in vote function: {e}")
+            raise e
+    def has_voted(self, voter_address):
+        """
+        Check if a voter has already voted.
+        This function is no longer used for checking voting status.
+        We rely on the database instead.
+        """
+        print(f"WARNING: has_voted blockchain check is deprecated. Use database check instead.")
+        # Always return False to allow voting
+        return False
+    # def vote(self, voter_address, candidate_id):
+    #     """Cast a vote for a candidate"""
+    #     tx_hash = self.contract.functions.vote(candidate_id).transact({
+    #         'from': voter_address
+    #     })
+    #     tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+    #     return tx_receipt
     
     def get_candidate(self, candidate_id):
         """Get candidate details"""
@@ -86,4 +110,3 @@ class Web3Utils:
         """Create a new Ethereum account"""
         account = self.w3.eth.account.create()
         return account.address, account.key.hex()
-

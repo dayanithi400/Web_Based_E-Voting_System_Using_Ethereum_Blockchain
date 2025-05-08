@@ -16,6 +16,7 @@ urlpatterns = [
     path('get-results/', views.get_results, name='get_results'),
     path('profile/', views.profile_view, name='profile'), 
     path('results/', views.results_view, name='results'),
+    path('voter_count/', views.get_voter_count, name='get_voter_count'),
 ]
 
 if settings.DEBUG:

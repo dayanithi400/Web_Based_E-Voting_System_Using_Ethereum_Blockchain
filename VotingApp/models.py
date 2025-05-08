@@ -36,6 +36,7 @@ class Vote(models.Model):
     voter = models.ForeignKey(User, on_delete=models.CASCADE)
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
+    Constituencies=models.CharField(max_length=100, null=True)
     transaction_hash = models.CharField(max_length=66)
     
     class Meta:

@@ -239,51 +239,58 @@
                         </div>
                     </div>
                     
-                    <!-- Constituency Results Tab -->
-                    <div class="tab-pane fade" id="constituency" role="tabpanel" aria-labelledby="constituency-tab">
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <h4>Constituency-wise Results</h4>
-                            </div>
-                            <div class="col-md-6">
-                                <select class="form-select constituency-select float-md-end" id="constituencySelect">
-                                    <option value="">Select Constituency</option>
-                                    <!-- Will be populated dynamically -->
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Constituency Chart -->
-                        <div class="chart-container">
-                            <canvas id="constituencyChart"></canvas>
-                        </div>
-                        
-                        <!-- Constituency Results Table -->
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Candidate</th>
-                                        <th>Party</th>
-                                        <th>Votes</th>
-                                        <th>Vote Share</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="constituencyResultsTable">
-                                    <tr>
-                                        <td colspan="5" class="text-center">
-                                            <i class="fas fa-spinner fa-spin me-2"></i>Loading results...
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="last-updated">
-                            Last updated: <span id="constituency-last-updated">-</span>
-                        </div>
-                    </div>
+                    
+<!-- Constituency Results Tab -->
+<div class="tab-pane fade" id="constituency" role="tabpanel" aria-labelledby="constituency-tab">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h4>Constituency-wise Results</h4>
+        </div>
+        <div class="col-md-6">
+            <select class="form-select constituency-select float-md-end" id="constituencySelect">
+                <option value="">Select Constituency</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Voter Turnout Percentage Display -->
+    <div class="mb-4">
+        <h5>Voter Turnout</h5>
+        <div id="voter-turnout" class="fw-bold text-primary">Loading...</div>
+    </div>
+
+    <!-- Constituency Chart -->
+    <div class="chart-container">
+        <canvas id="constituencyChart"></canvas>
+    </div>
+
+    <!-- Constituency Results Table -->
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Candidate</th>
+                    <th>Party</th>
+                    <th>Votes</th>
+                    <th>Vote Share</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="constituencyResultsTable">
+                <tr>
+                    <td colspan="5" class="text-center">
+                        <i class="fas fa-spinner fa-spin me-2"></i>Loading results...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="last-updated">
+        Last updated: <span id="constituency-last-updated">-</span>
+    </div>
+</div>
+
                 </div>
             </div>
         </div>
@@ -399,20 +406,6 @@
                             '<tr><td colspan="4" class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Error fetching results</td></tr>';
                     });
             }
-            function fetchTotalVoters(consconstituency = null){
-                let url = '{% url "get_voter_count" %}';
-                if (constituency) {
-                    url += `?constituency=${encodeURIComponent(constituency)}`;
-                }
-                
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (constituency){
-                            url +=`?constituency=${encodeURIComponent(constituency)}`;
-                        }else{}
-                    })
-            }
             
             // Function to fetch constituency results
             function fetchConstituencyResults(constituency = null) {
@@ -428,6 +421,11 @@
                             updateConstituencyChart(data.results);
                             updateConstituencyTable(data.results);
                             document.getElementById('constituency-last-updated').textContent = new Date().toLocaleTimeString();
+                            const totalVoters = data.total_voters;
+                            const votesCast = data.votes_cast;
+                            const turnout = totalVoters > 0 ? ((votesCast / totalVoters) * 100).toFixed(2) : '0.00';
+                            document.getElementById('voter-turnout').textContent = `${votesCast} votes cast out of ${totalVoters} voters (${turnout}%)`;
+
                         } else {
                             document.getElementById('constituencyResultsTable').innerHTML = 
                                 `<tr><td colspan="5" class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>${data.message}</td></tr>`;
